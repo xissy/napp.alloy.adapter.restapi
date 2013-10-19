@@ -192,19 +192,22 @@ function Sync(method, model, opts) {
 			apiCall(params, function(_response) {
 				if (_response.success) {
 					var data = parseJSON(DEBUG, _response, parentNode);
-					var values = [];
-					model.length = 0;
-					for (var i in data) {
-						var item = {};
-						item = data[i];
-						if (item[model.idAttribute] === undefined) {
-							item[model.idAttribute] = guid();
+					if (Array.isArray(data)) {
+						var values = [];
+						for (var i in data) {
+							var item = {};
+							item = data[i];
+							if (item[model.idAttribute] === undefined) {
+								item[model.idAttribute] = guid();
+							}
+							values.push(item);
 						}
-						values.push(item);
-						model.length++;
+
+						params.success(values, _response.responseText);
+					} else {
+						params.success(data);
 					}
 
-					params.success((model.length === 1) ? values[0] : values, _response.responseText);
 					model.trigger("fetch");
 				} else {
 					params.error(_response.responseJSON, _response.responseText);
